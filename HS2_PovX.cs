@@ -34,16 +34,14 @@ namespace HS2_PovX
 			"How far can the camera be rotated horizontally? " +
 			"Only applies during scenes where the player character can't move.";
 		const string DESCRIPTION_CAMERA_STABILIZE =
-			"When enabled, reduces camera shake by getting the median position. " +
-			"Only applies during H scene.";
+			"When enabled, reduces camera shake by getting the median position.";
 		const string DESCRIPTION_CAMERA_HEAD_ROTATE =
 			"When enabled, the head rotates along with the camera. " +
 			"This may ruin some animations when selecting the girls, " +
 			"such as blowjobs.";
 
 		const string DESCRIPTION_CHARA_CYCLE_KEY =
-			"Switch between characters during PoV mode. " +
-			"Only applies during H scene.";
+			"Switch between characters during PoV mode.";
 		const string DESCRIPTION_CAMERA_DRAG_KEY =
 			"During PoV mode, holding down this key will move the camera if the mouse isn't locked.";
 		const string DESCRIPTION_TOGGLE_CURSOR_KEY =
