@@ -31,8 +31,7 @@ namespace HS2_PovX
 		const string DESCRIPTION_CAMERA_MAX_X =
 			"Highest upward and rightware angle the camera can rotate.";
 		const string DESCRIPTION_CAMERA_SPAN_Y =
-			"How far can the camera be rotated horizontally? " +
-			"Only applies during scenes where the player character can't move.";
+			"How far can the camera be rotated horizontally?";
 		const string DESCRIPTION_CAMERA_STABILIZE =
 			"When enabled, reduces camera shake by getting the median position.";
 		const string DESCRIPTION_CAMERA_HEAD_ROTATE =
