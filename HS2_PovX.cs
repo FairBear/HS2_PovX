@@ -9,9 +9,9 @@ namespace HS2_PovX
 	[BepInPlugin(GUID, Name, Version)]
 	public partial class HS2_PovX : BaseUnityPlugin
     {
-		const string GUID = "com.2155x.fairbair.ai_povx";
+		const string GUID = "com.2155x.fairbair.hs2_povx";
 		const string Name = "HS2 PoV X";
-		const string Version = "1.0.0";
+		const string Version = "1.0.1";
 
 		const string SECTION_GENERAL = "General";
 		const string SECTION_CAMERA = "Camera";
@@ -32,8 +32,8 @@ namespace HS2_PovX
 			"Highest upward and rightware angle the camera can rotate.";
 		const string DESCRIPTION_CAMERA_SPAN_Y =
 			"How far can the camera be rotated horizontally?";
-		const string DESCRIPTION_CAMERA_STABILIZE =
-			"When enabled, reduces camera shake by getting the median position.";
+		const string DESCRIPTION_CAMERA_SMOOTHNESS =
+			"The higher the number, the smoother the camera becomes.";
 		const string DESCRIPTION_CAMERA_HEAD_ROTATE =
 			"When enabled, the head rotates along with the camera. " +
 			"This may ruin some animations when selecting the girls, " +
@@ -59,6 +59,7 @@ namespace HS2_PovX
 		public static ConfigEntry<float> CameraMaxX { get; set; }
 		public static ConfigEntry<float> CameraSpanY { get; set; }
 		public static ConfigEntry<bool> CameraStabilize { get; set; }
+		public static ConfigEntry<int> CameraSmoothness { get; set; }
 		public static ConfigEntry<bool> CameraHeadRotate { get; set; }
 
 		public static ConfigEntry<KeyboardShortcut> PoVKey { get; set; }
@@ -76,11 +77,11 @@ namespace HS2_PovX
 			ZoomFoV = Config.Bind(SECTION_CAMERA, "Zoom Field of View", 5f);
 			OffsetX = Config.Bind(SECTION_CAMERA, "Offset X", 0f, DESCRIPTION_OFFSET_X);
 			OffsetY = Config.Bind(SECTION_CAMERA, "Offset Y", 0f, DESCRIPTION_OFFSET_Y);
-			OffsetZ = Config.Bind(SECTION_CAMERA, "Offset Z", 0f, DESCRIPTION_OFFSET_Z);
+			OffsetZ = Config.Bind(SECTION_CAMERA, "Offset Z", 0.15f, DESCRIPTION_OFFSET_Z);
 			CameraMinX = Config.Bind(SECTION_CAMERA, "Min Camera Angle X", 80f, DESCRIPTION_CAMERA_MIN_X);
 			CameraMaxX = Config.Bind(SECTION_CAMERA, "Max Camera Angle X", 80f, DESCRIPTION_CAMERA_MAX_X);
 			CameraSpanY = Config.Bind(SECTION_CAMERA, "Camera Angle Span Y", 70f, DESCRIPTION_CAMERA_SPAN_Y);
-			CameraStabilize = Config.Bind(SECTION_CAMERA, "Stabilize Camera", false, DESCRIPTION_CAMERA_STABILIZE);
+			CameraSmoothness = Config.Bind(SECTION_CAMERA, "Camera Smoothness", 0, new ConfigDescription(DESCRIPTION_CAMERA_SMOOTHNESS, new AcceptableValueRange<int>(0, 90)));
 			CameraHeadRotate = Config.Bind(SECTION_CAMERA, "Rotate Head to Camera", false, DESCRIPTION_CAMERA_HEAD_ROTATE);
 
 			PoVKey = Config.Bind(SECTION_HOTKEYS, "PoV Toggle Key", new KeyboardShortcut(KeyCode.Comma));
@@ -91,6 +92,11 @@ namespace HS2_PovX
 
 			HideHead.SettingChanged += (sender, args) =>
 				Controller.SetChaControl(Controller.ChaCtrl);
+
+			CameraSmoothness.SettingChanged += (sender, args) =>
+				Controller.cameraSmoothness = CameraSmoothness.Value / 100f;
+
+			Controller.cameraSmoothness = CameraSmoothness.Value / 100f;
 
 			HarmonyWrapper.PatchAll(typeof(HS2_PovX));
 		}

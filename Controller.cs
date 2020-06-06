@@ -1,5 +1,4 @@
 ﻿using AIChara;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace HS2_PovX
@@ -18,6 +17,7 @@ namespace HS2_PovX
 		public static Vector3 cameraPosition = Vector3.zero;
 		public static Quaternion cameraRotation = Quaternion.identity;
 		public static bool cameraDidSet = false;
+		public static float cameraSmoothness = 0f;
 
 		// 0 = Player; 1 = 1st Partner; 2 = 2nd Partner; 3 = ...
 		public static int focus = 0;
@@ -29,8 +29,6 @@ namespace HS2_PovX
 		public static float backupFoV = 0f;
 		public static Vector3 backupPosition = Vector3.zero;
 		public static Quaternion backupRotation = Quaternion.identity;
-		public static Vector3 backupHead = Vector3.zero;
-		public static Queue<Vector3> seqPositions = new Queue<Vector3>();
 
 		public static bool didHideHead = false;
 
@@ -177,13 +175,10 @@ namespace HS2_PovX
 
 		public static void SetChaControl(ChaControl next)
 		{
-			seqPositions.Clear();
-
 			if (chaCtrl != null && didHideHead)
 			{
 				didHideHead = false;
-				//chaCtrl.objHeadBone.SetActive(true);
-				chaCtrl.objHeadBone.transform.localScale = backupHead;
+				chaCtrl.objHeadBone.SetActive(true);
 			}
 
 			chaCtrl = next;
@@ -191,73 +186,67 @@ namespace HS2_PovX
 			if (chaCtrl != null)
 			{
 				eyeOffset = Tools.GetEyesOffset(chaCtrl);
+				prevPosition = GetDesiredPosition(chaCtrl.objHeadBone.transform);
 
 				if (HS2_PovX.HideHead.Value)
 				{
 					didHideHead = true;
-					//chaCtrl.objHeadBone.SetActive(false);
-					backupHead = chaCtrl.objHeadBone.transform.localScale;
-					chaCtrl.objHeadBone.transform.localScale = Vector3.zero;
+					chaCtrl.objHeadBone.SetActive(false);
 				}
 			}
 		}
 
-		public static void SetPosition(Transform neck)
+		public static Vector3 GetDesiredPosition(Transform origin)
 		{
-			if (cameraPosition != Camera.main.transform.position)
-				backupPosition = Camera.main.transform.position;
-
-			/*EyeObject[] eyes = chaCtrl.eyeLookCtrl.eyeLookScript.eyeObjs;
+			EyeObject[] eyes = chaCtrl.eyeLookCtrl.eyeLookScript.eyeObjs;
 			Vector3 pos = Vector3.Lerp(
 				eyes[0].eyeTransform.position,
 				eyes[1].eyeTransform.position,
 				0.5f
-			);
+			) + HS2_PovX.OffsetZ.Value * origin.forward;
 
-			Vector3 next =
-				pos +
-				HS2_PovX.OffsetX.Value * neck.right +
-				HS2_PovX.OffsetY.Value * neck.up +
-				HS2_PovX.OffsetZ.Value * neck.forward;*/
+			return pos +
+				HS2_PovX.OffsetX.Value * origin.right +
+				HS2_PovX.OffsetY.Value * origin.up +
+				HS2_PovX.OffsetZ.Value * origin.forward;
+		}
 
+		public static void SetPosition(Transform origin)
+		{
+			if (cameraPosition != Camera.main.transform.position)
+				backupPosition = Camera.main.transform.position;
+
+			Vector3 next = GetDesiredPosition(origin);
+
+			/*Transform head = chaCtrl.objHeadBone.transform;
 			Vector3 next =
 				neck.position +
-				(HS2_PovX.OffsetX.Value + eyeOffset.x) * neck.right +
-				(HS2_PovX.OffsetY.Value + eyeOffset.y) * neck.up +
-				(HS2_PovX.OffsetZ.Value + eyeOffset.z) * neck.forward;
+				(HS2_PovX.OffsetX.Value + eyeOffset.x) * head.right +
+				(HS2_PovX.OffsetY.Value + eyeOffset.y) * head.up +
+				(HS2_PovX.OffsetZ.Value + eyeOffset.z) * head.forward;*/
 
-			if (HS2_PovX.CameraStabilize.Value)
-			{
-				seqPositions.Enqueue(next);
-
-				if (seqPositions.Count > 10)
-					seqPositions.Dequeue();
-
-				next = Vector3.zero;
-
-				foreach (Vector3 prev in seqPositions)
-					next += prev;
-
-				next /= seqPositions.Count;
-			}
+			if (cameraSmoothness > 0f)
+				next = prevPosition = Vector3.Lerp(next, prevPosition, cameraSmoothness);
 
 			Camera.main.transform.position = cameraPosition = next;
 		}
 
-		public static void SetRotation(Transform neck)
+		public static void SetRotation(Transform origin)
 		{
 			if (cameraRotation != Camera.main.transform.rotation)
 				backupRotation = Camera.main.transform.rotation;
 
 			if (HS2_PovX.CameraHeadRotate.Value)
 			{
+				NeckObjectVer2[] bones = chaCtrl.neckLookCtrl.neckLookScript.aBones;
+				Transform neck = bones[0].neckBone;
 				neck.Rotate(cameraAngleOffsetX, cameraAngleOffsetY, 0f);
-				Camera.main.transform.rotation = neck.rotation;
+				Camera.main.transform.rotation = origin.rotation;
 			}
 			else
 			{
 				// Preserve current neck rotation.
-				Camera.main.transform.rotation = neck.rotation;
+				Camera.main.transform.rotation = origin.rotation;
 				Camera.main.transform.Rotate(cameraAngleOffsetX, cameraAngleOffsetY, 0f);
 			}
 
@@ -267,8 +256,7 @@ namespace HS2_PovX
 		// Used for scenes where the focused character cannot be controlled.
 		public static void ScenePoV()
 		{
-			NeckObjectVer2[] bones = chaCtrl.neckLookCtrl.neckLookScript.aBones;
-			Transform neck = bones[0].neckBone;
+			Transform head = chaCtrl.objHeadBone.transform;
 
 			if (cameraFoV != Camera.main.fieldOfView)
 				backupFoV = Camera.main.fieldOfView;
@@ -278,8 +266,8 @@ namespace HS2_PovX
 					HS2_PovX.ZoomFoV.Value :
 					HS2_PovX.FoV.Value;
 
-			SetRotation(neck);
-			SetPosition(neck);
+			SetRotation(head);
+			SetPosition(head);
 		}
 	}
 }
