@@ -3,6 +3,12 @@
 * This mod only affects the actual game, not the studio. A PoV mod for the studio made by [Mantas-2155X](https://github.com/Mantas-2155X) can be found [here](https://github.com/Mantas-2155X/StudioPOV).
 * Settings can be changed if you have `BepInEx.ConfigurationManager` installed.
 
+<details>
+  <summary>Preview</summary>
+  
+![](https://raw.githubusercontent.com/FairBear/HS2_PovX/master/Preview/Preview0.png)
+</details>
+
 ## Requirements
 * Honey Select 2
 * BepInEx
