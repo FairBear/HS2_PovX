@@ -25,6 +25,10 @@ __PoV Toggle Key__ = `, (Comma)`
 __Character Cycle Key__ = `. (Period)`
 * Switch between characters during PoV mode.
 
+__Lock-On Key__ = `; (Semi-Colon)`
+* Lock-on to any of the other characters during PoV mode.
+* Press again to cycle between characters, until it exits lock-on mode.
+
 __Camera Drag Key__ = `Left Mouse Button`
 * During PoV mode, holding down this key will move the camera if the mouse isn't locked.
 
