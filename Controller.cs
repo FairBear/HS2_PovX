@@ -3,10 +3,8 @@ using UnityEngine;
 
 namespace HS2_PovX
 {
-	public static class Controller
+	public static partial class Controller
 	{
-		public static bool _toggled = false;
-
 		// Angle offsets are used for situations where the character can't move.
 		// The offsets are added to the neck's current rotation.
 		// This means that the values can be negative.
@@ -21,6 +19,7 @@ namespace HS2_PovX
 
 		// 0 = Player; 1 = 1st Partner; 2 = 2nd Partner; 3 = ...
 		public static int focus = 0;
+		public static int focusLockOn = -1;
 		public static ChaControl[] chaCtrls = new ChaControl[0];
 		public static ChaControl chaCtrl = null;
 
@@ -34,81 +33,28 @@ namespace HS2_PovX
 
 		public static bool Toggled
 		{
-			get => _toggled;
+			get => chaCtrl != null;
 
 			set
 			{
-				if (_toggled == value)
+				if (Toggled == value)
 					return;
 
 				if (value)
 				{
-					ChaControl[] list = Tools.ChaCtrls;
-
-					if (list.Length == 0)
-						return;
-
 					focus = 0;
-					chaCtrls = list;
+					chaCtrls = GetChaControls();
 
-					SetChaControl(ChaCtrl);
-
-					if (chaCtrl == null)
+					if (chaCtrls.Length == 0)
 						return;
 
-					cameraAngleOffsetX = cameraAngleOffsetY = 0f;
-					cameraAngleY = chaCtrl.neckLookCtrl.neckLookScript.aBones[0].neckBone.eulerAngles.y;
-					backupFoV = cameraFoV = Camera.main.fieldOfView;
-					backupPosition = cameraPosition = Camera.main.transform.position;
-					backupRotation = cameraRotation = Camera.main.transform.rotation;
+					SetChaControl(GetChaControl());
 				}
 				else
 				{
 					SetChaControl(null);
-
-					Cursor.visible = true;
-					Cursor.lockState = CursorLockMode.None;
-
-					Camera camera = Camera.main;
-
-					if (camera.fieldOfView == cameraFoV)
-						camera.fieldOfView = backupFoV;
-
-					if (camera.transform.position == cameraPosition)
-						camera.transform.position = backupPosition;
-
-					if (camera.transform.rotation == cameraRotation)
-						camera.transform.rotation = backupRotation;
+					focusLockOn = -1;
 				}
-
-				_toggled = value;
-			}
-		}
-
-		public static ChaControl ChaCtrl
-		{
-			get
-			{
-				if (chaCtrls.Length == 0)
-					return null;
-
-				int length = chaCtrls.Length;
-
-				if (focus >= length)
-					focus %= length;
-
-				for (int i = 0; i < length; i++)
-				{
-					ChaControl target = chaCtrls[focus];
-
-					if (target != null && target.visibleAll)
-						return target;
-
-					// Skip invisible or destroyed characters.
-					focus = (focus + 1) % length;
-				}
-
-				return null;
 			}
 		}
 
@@ -125,7 +71,7 @@ namespace HS2_PovX
 
 			if (chaCtrl == null || !chaCtrl.visibleAll)
 			{
-				SetChaControl(ChaCtrl);
+				SetChaControl(GetChaControl());
 
 				if (chaCtrl == null)
 				{
@@ -136,8 +82,20 @@ namespace HS2_PovX
 
 			if (HS2_PovX.CharaCycleKey.Value.IsDown())
 			{
+				int prev = focus;
 				focus = (focus + 1) % chaCtrls.Length;
-				SetChaControl(ChaCtrl);
+
+				// Swap lock-on.
+				if (focusLockOn == focus)
+					focusLockOn = prev;
+
+				SetChaControl(GetChaControl());
+				return;
+			}
+
+			if (HS2_PovX.LockOnKey.Value.IsDown())
+			{
+				focusLockOn = (focusLockOn + 2) % (chaCtrls.Length + 1) - 1;
 				return;
 			}
 
@@ -173,57 +131,28 @@ namespace HS2_PovX
 			}
 		}
 
-		public static void SetChaControl(ChaControl next)
+		public static Vector3 GetDesiredPosition(ChaControl chaCtrl)
 		{
-			if (chaCtrl != null && didHideHead)
-			{
-				didHideHead = false;
-				chaCtrl.objHeadBone.SetActive(true);
-			}
-
-			chaCtrl = next;
-
-			if (chaCtrl != null)
-			{
-				eyeOffset = Tools.GetEyesOffset(chaCtrl);
-				prevPosition = GetDesiredPosition(chaCtrl.objHeadBone.transform);
-
-				if (HS2_PovX.HideHead.Value)
-				{
-					didHideHead = true;
-					chaCtrl.objHeadBone.SetActive(false);
-				}
-			}
-		}
-
-		public static Vector3 GetDesiredPosition(Transform origin)
-		{
+			Transform head = chaCtrl.objHeadBone.transform;
 			EyeObject[] eyes = chaCtrl.eyeLookCtrl.eyeLookScript.eyeObjs;
 			Vector3 pos = Vector3.Lerp(
 				eyes[0].eyeTransform.position,
 				eyes[1].eyeTransform.position,
 				0.5f
-			) + HS2_PovX.OffsetZ.Value * origin.forward;
+			);
 
 			return pos +
-				HS2_PovX.OffsetX.Value * origin.right +
-				HS2_PovX.OffsetY.Value * origin.up +
-				HS2_PovX.OffsetZ.Value * origin.forward;
+				HS2_PovX.OffsetX.Value * head.right +
+				HS2_PovX.OffsetY.Value * head.up +
+				HS2_PovX.OffsetZ.Value * head.forward;
 		}
 
-		public static void SetPosition(Transform origin)
+		public static void SetPosition()
 		{
 			if (cameraPosition != Camera.main.transform.position)
 				backupPosition = Camera.main.transform.position;
 
-			Vector3 next = GetDesiredPosition(origin);
-
-			/*Transform head = chaCtrl.objHeadBone.transform;
-			Vector3 next =
-				neck.position +
-				(HS2_PovX.OffsetX.Value + eyeOffset.x) * head.right +
-				(HS2_PovX.OffsetY.Value + eyeOffset.y) * head.up +
-				(HS2_PovX.OffsetZ.Value + eyeOffset.z) * head.forward;*/
+			Vector3 next = GetDesiredPosition(chaCtrl);
 
 			if (cameraSmoothness > 0f)
 				next = prevPosition = Vector3.Lerp(next, prevPosition, cameraSmoothness);
@@ -231,33 +160,33 @@ namespace HS2_PovX
 			Camera.main.transform.position = cameraPosition = next;
 		}
 
-		public static void SetRotation(Transform origin)
+		public static void SetRotation()
 		{
+			Transform head = chaCtrl.objHeadBone.transform;
+			Transform camTransform = Camera.main.transform;
+			ChaControl lockOn = GetChaControlLockOn();
+
 			if (cameraRotation != Camera.main.transform.rotation)
 				backupRotation = Camera.main.transform.rotation;
+
+			if (lockOn != null)
+				camTransform.LookAt(GetDesiredPosition(lockOn), Vector3.up);
+			else
+				camTransform.rotation = head.rotation;
+
+			Camera.main.transform.Rotate(cameraAngleOffsetX, cameraAngleOffsetY, 0f);
 
 			if (HS2_PovX.CameraHeadRotate.Value)
 			{
 				NeckObjectVer2[] bones = chaCtrl.neckLookCtrl.neckLookScript.aBones;
-				Transform neck = bones[0].neckBone;
-				neck.Rotate(cameraAngleOffsetX, cameraAngleOffsetY, 0f);
-				Camera.main.transform.rotation = origin.rotation;
-			}
-			else
-			{
-				// Preserve current neck rotation.
-				Camera.main.transform.rotation = origin.rotation;
-				Camera.main.transform.Rotate(cameraAngleOffsetX, cameraAngleOffsetY, 0f);
+				bones[0].neckBone.rotation = Camera.main.transform.rotation;
 			}
 
 			cameraRotation = Camera.main.transform.rotation;
 		}
 
-		// Used for scenes where the focused character cannot be controlled.
-		public static void ScenePoV()
+		public static void SetFoV()
 		{
-			Transform head = chaCtrl.objHeadBone.transform;
-
 			if (cameraFoV != Camera.main.fieldOfView)
 				backupFoV = Camera.main.fieldOfView;
 
@@ -265,9 +194,13 @@ namespace HS2_PovX
 				HS2_PovX.ZoomKey.Value.IsPressed() ?
 					HS2_PovX.ZoomFoV.Value :
 					HS2_PovX.FoV.Value;
+		}
 
-			SetRotation(head);
-			SetPosition(head);
+		public static void ScenePoV()
+		{
+			SetPosition();
+			SetRotation();
+			SetFoV();
 		}
 	}
 }

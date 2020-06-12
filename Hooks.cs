@@ -21,5 +21,12 @@ namespace HS2_PovX
 
 			return flag;
 		}
+
+		[HarmonyPrefix]
+		[HarmonyPatch(typeof(CameraControl_Ver2), "LateUpdate")]
+		public static bool Prefix_CameraControl_Ver2_LateUpdate()
+		{
+			return !Controller.Toggled;
+		}
 	}
 }

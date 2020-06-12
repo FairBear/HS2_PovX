@@ -11,7 +11,7 @@ namespace HS2_PovX
     {
 		const string GUID = "com.2155x.fairbair.hs2_povx";
 		const string Name = "HS2 PoV X";
-		const string Version = "1.0.1";
+		const string Version = "1.1.0";
 
 		const string SECTION_GENERAL = "General";
 		const string SECTION_CAMERA = "Camera";
@@ -41,6 +41,9 @@ namespace HS2_PovX
 
 		const string DESCRIPTION_CHARA_CYCLE_KEY =
 			"Switch between characters during PoV mode.";
+		const string DESCRIPTION_LOCK_ON_KEY =
+			"Lock-on to any of the other characters during PoV mode. " +
+			"Press again to cycle between characters or exit lock-on mode.";
 		const string DESCRIPTION_CAMERA_DRAG_KEY =
 			"During PoV mode, holding down this key will move the camera if the mouse isn't locked.";
 		const string DESCRIPTION_TOGGLE_CURSOR_KEY =
@@ -64,6 +67,7 @@ namespace HS2_PovX
 
 		public static ConfigEntry<KeyboardShortcut> PoVKey { get; set; }
 		public static ConfigEntry<KeyboardShortcut> CharaCycleKey { get; set; }
+		public static ConfigEntry<KeyboardShortcut> LockOnKey { get; set; }
 		public static ConfigEntry<KeyboardShortcut> CameraDragKey { get; set; }
 		public static ConfigEntry<KeyboardShortcut> ToggleCursorKey { get; set; }
 		public static ConfigEntry<KeyboardShortcut> ZoomKey { get; set; }
@@ -86,12 +90,13 @@ namespace HS2_PovX
 
 			PoVKey = Config.Bind(SECTION_HOTKEYS, "PoV Toggle Key", new KeyboardShortcut(KeyCode.Comma));
 			CharaCycleKey = Config.Bind(SECTION_HOTKEYS, "Character Cycle Key", new KeyboardShortcut(KeyCode.Period), DESCRIPTION_CHARA_CYCLE_KEY);
+			LockOnKey = Config.Bind(SECTION_HOTKEYS, "Lock-On Key", new KeyboardShortcut(KeyCode.Semicolon), DESCRIPTION_LOCK_ON_KEY);
 			CameraDragKey = Config.Bind(SECTION_HOTKEYS, "Camera Drag Key", new KeyboardShortcut(KeyCode.Mouse0), DESCRIPTION_CAMERA_DRAG_KEY);
 			ToggleCursorKey = Config.Bind(SECTION_HOTKEYS, "Toggle Cursor Key", new KeyboardShortcut(KeyCode.LeftControl), DESCRIPTION_TOGGLE_CURSOR_KEY);
 			ZoomKey = Config.Bind(SECTION_HOTKEYS, "Zoom Key", new KeyboardShortcut(KeyCode.X));
 
 			HideHead.SettingChanged += (sender, args) =>
-				Controller.SetChaControl(Controller.ChaCtrl);
+				Controller.RefreshChaControl();
 
 			CameraSmoothness.SettingChanged += (sender, args) =>
 				Controller.cameraSmoothness = CameraSmoothness.Value / 100f;

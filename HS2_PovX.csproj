@@ -63,6 +63,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controller.ChaControl.cs" />
     <Compile Include="Controller.cs" />
     <Compile Include="Hooks.cs" />
     <Compile Include="HS2_PovX.cs" />

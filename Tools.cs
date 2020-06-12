@@ -1,15 +1,12 @@
 ﻿using AIChara;
-using UnityEngine;
+using System;
 
 namespace HS2_PovX
 {
 	public static class Tools
 	{
-		public static ChaControl[] ChaCtrls =>
-			Object.FindObjectsOfType<ChaControl>();
-		
 		// Return the offset of the eyes in the neck's object space.
-		public static Vector3 GetEyesOffset(ChaControl chaCtrl)
+		/*public static Vector3 GetEyesOffset(ChaControl chaCtrl)
 		{
 			Transform neck = chaCtrl.neckLookCtrl.neckLookScript.aBones[0].neckBone;
 			EyeObject[] eyes = chaCtrl.eyeLookCtrl.eyeLookScript.eyeObjs;
@@ -35,7 +32,7 @@ namespace HS2_PovX
 			}
 
 			return offset;
-		}
+		}*/
 
 		// Modulo without negative.
 		public static float Mod2(float value, float mod)
