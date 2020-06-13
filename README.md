@@ -1,6 +1,5 @@
 # HS2_PovX
 * PoV (first person view) mod for HoneySelect 2.
-* ~~This mod only affects the actual game, not the studio. A PoV mod for the studio made by [Mantas-2155X](https://github.com/Mantas-2155X) can be found [here](https://github.com/Mantas-2155X/StudioPOV).~~
 * If you only want to use this for `StudioNEOV2`, a better PoV plugin made by [Mantas-2155X](https://github.com/Mantas-2155X) can be found [here](https://github.com/Mantas-2155X/StudioPOV).
 * Settings can be changed if you have `BepInEx.ConfigurationManager` installed.
 
