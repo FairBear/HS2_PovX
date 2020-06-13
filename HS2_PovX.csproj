@@ -68,7 +68,7 @@
     <Compile Include="Hooks.cs" />
     <Compile Include="HS2_PovX.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Tools.cs" />
+    <None Include="Tools.cs.bak" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

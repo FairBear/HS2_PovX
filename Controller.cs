@@ -10,7 +10,6 @@ namespace HS2_PovX
 		// This means that the values can be negative.
 		public static float cameraAngleOffsetX = 0f;
 		public static float cameraAngleOffsetY = 0f;
-		public static float cameraAngleY = 0f;
 		public static float cameraFoV = 0f;
 		public static Vector3 cameraPosition = Vector3.zero;
 		public static Quaternion cameraRotation = Quaternion.identity;
@@ -87,7 +86,10 @@ namespace HS2_PovX
 
 				// Swap lock-on.
 				if (focusLockOn == focus)
+				{
 					focusLockOn = prev;
+					cameraAngleOffsetX = cameraAngleOffsetY = 0f;
+				}
 
 				SetChaControl(GetChaControl());
 				return;
@@ -96,6 +98,7 @@ namespace HS2_PovX
 			if (HS2_PovX.LockOnKey.Value.IsDown())
 			{
 				focusLockOn = (focusLockOn + 2) % (chaCtrls.Length + 1) - 1;
+				cameraAngleOffsetX = cameraAngleOffsetY = 0f;
 				return;
 			}
 
@@ -116,7 +119,6 @@ namespace HS2_PovX
 
 				cameraAngleOffsetX = Mathf.Clamp(cameraAngleOffsetX - x, -max, min);
 				cameraAngleOffsetY = Mathf.Clamp(cameraAngleOffsetY + y, -span, span);
-				cameraAngleY = Tools.Mod2(cameraAngleY + y, 360f);
 			}
 
 			if (HS2_PovX.ToggleCursorKey.Value.IsDown())
@@ -170,7 +172,13 @@ namespace HS2_PovX
 				backupRotation = Camera.main.transform.rotation;
 
 			if (lockOn != null)
-				camTransform.LookAt(GetDesiredPosition(lockOn), Vector3.up);
+			{
+				Vector3 euler = Quaternion.FromToRotation(GetDesiredPosition(lockOn), GetDesiredPosition(chaCtrl)).eulerAngles;
+				camTransform.rotation = Quaternion.Euler(euler.x, euler.y, 0f);
+				//camTransform.LookAt(GetDesiredPosition(lockOn), Vector3.up);
+			}
+			else if (HS2_PovX.CameraNormalize.Value)
+				camTransform.rotation = Quaternion.Euler(head.rotation.eulerAngles.x, head.rotation.eulerAngles.y, 0f);
 			else
 				camTransform.rotation = head.rotation;
 
@@ -198,8 +206,8 @@ namespace HS2_PovX
 
 		public static void ScenePoV()
 		{
-			SetPosition();
 			SetRotation();
+			SetPosition();
 			SetFoV();
 		}
 	}

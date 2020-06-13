@@ -26,6 +26,7 @@ namespace HS2_PovX
 
 				//eyeOffset = Tools.GetEyesOffset(chaCtrl);
 				prevPosition = GetDesiredPosition(chaCtrl);
+				cameraAngleOffsetX = cameraAngleOffsetY = 0f;
 
 				if (HS2_PovX.HideHead.Value)
 				{
@@ -61,7 +62,8 @@ namespace HS2_PovX
 
 		public static void RefreshChaControl()
 		{
-			SetChaControl(GetChaControl());
+			if (Toggled)
+				SetChaControl(GetChaControl());
 		}
 
 		public static ChaControl GetChaControlLockOn()
@@ -97,8 +99,7 @@ namespace HS2_PovX
 		public static void SetBackups()
 		{
 			Camera camera = Camera.main;
-			cameraAngleOffsetX = cameraAngleOffsetY = 0f;
-			cameraAngleY = chaCtrl.neckLookCtrl.neckLookScript.aBones[0].neckBone.eulerAngles.y;
+			//cameraAngleY = chaCtrl.neckLookCtrl.neckLookScript.aBones[0].neckBone.eulerAngles.y;
 			backupFoV = cameraFoV = camera.fieldOfView;
 			backupPosition = cameraPosition = camera.transform.position;
 			backupRotation = cameraRotation = camera.transform.rotation;

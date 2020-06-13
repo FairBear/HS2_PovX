@@ -6,12 +6,13 @@ using UnityEngine;
 namespace HS2_PovX
 {
 	[BepInProcess("HoneySelect2")]
+	[BepInProcess("StudioNEOV2")]
 	[BepInPlugin(GUID, Name, Version)]
 	public partial class HS2_PovX : BaseUnityPlugin
     {
 		const string GUID = "com.2155x.fairbair.hs2_povx";
 		const string Name = "HS2 PoV X";
-		const string Version = "1.1.0";
+		const string Version = "1.1.1";
 
 		const string SECTION_GENERAL = "General";
 		const string SECTION_CAMERA = "Camera";
@@ -32,6 +33,9 @@ namespace HS2_PovX
 			"Highest upward and rightware angle the camera can rotate.";
 		const string DESCRIPTION_CAMERA_SPAN_Y =
 			"How far can the camera be rotated horizontally?";
+		const string DESCRIPTION_CAMERA_NORMALIZE =
+			"Stops the camera from tilting. " +
+			"Always enabled when locked-on.";
 		const string DESCRIPTION_CAMERA_SMOOTHNESS =
 			"The higher the number, the smoother the camera becomes.";
 		const string DESCRIPTION_CAMERA_HEAD_ROTATE =
@@ -61,7 +65,7 @@ namespace HS2_PovX
 		public static ConfigEntry<float> CameraMinX { get; set; }
 		public static ConfigEntry<float> CameraMaxX { get; set; }
 		public static ConfigEntry<float> CameraSpanY { get; set; }
-		public static ConfigEntry<bool> CameraStabilize { get; set; }
+		public static ConfigEntry<bool> CameraNormalize { get; set; }
 		public static ConfigEntry<int> CameraSmoothness { get; set; }
 		public static ConfigEntry<bool> CameraHeadRotate { get; set; }
 
@@ -85,6 +89,7 @@ namespace HS2_PovX
 			CameraMinX = Config.Bind(SECTION_CAMERA, "Min Camera Angle X", 80f, DESCRIPTION_CAMERA_MIN_X);
 			CameraMaxX = Config.Bind(SECTION_CAMERA, "Max Camera Angle X", 80f, DESCRIPTION_CAMERA_MAX_X);
 			CameraSpanY = Config.Bind(SECTION_CAMERA, "Camera Angle Span Y", 70f, DESCRIPTION_CAMERA_SPAN_Y);
+			CameraNormalize = Config.Bind(SECTION_CAMERA, "Normalize Camera Z-Axis", false, DESCRIPTION_CAMERA_NORMALIZE);
 			CameraSmoothness = Config.Bind(SECTION_CAMERA, "Camera Smoothness", 0, new ConfigDescription(DESCRIPTION_CAMERA_SMOOTHNESS, new AcceptableValueRange<int>(0, 90)));
 			CameraHeadRotate = Config.Bind(SECTION_CAMERA, "Rotate Head to Camera", false, DESCRIPTION_CAMERA_HEAD_ROTATE);
 
