@@ -173,9 +173,12 @@ namespace HS2_PovX
 
 			if (lockOn != null)
 			{
-				Vector3 euler = Quaternion.FromToRotation(GetDesiredPosition(lockOn), GetDesiredPosition(chaCtrl)).eulerAngles;
-				camTransform.rotation = Quaternion.Euler(euler.x, euler.y, 0f);
-				//camTransform.LookAt(GetDesiredPosition(lockOn), Vector3.up);
+				Vector3 position = camTransform.position;
+				camTransform.position = GetDesiredPosition(chaCtrl);
+				{
+					camTransform.LookAt(GetDesiredPosition(lockOn), Vector3.up);
+				}
+				camTransform.position = position;
 			}
 			else if (HS2_PovX.CameraNormalize.Value)
 				camTransform.rotation = Quaternion.Euler(head.rotation.eulerAngles.x, head.rotation.eulerAngles.y, 0f);
